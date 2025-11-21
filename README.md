@@ -11,8 +11,6 @@ It is designed to be:
 
 > Status: **Draft – internal work-in-progress**
 
----
-
 ## Goals
 
 1. Provide a stable JSON structure for T-shirt and apparel printing.
@@ -20,53 +18,37 @@ It is designed to be:
 3. Standardize how print areas, design layers, and production settings are described.
 4. Be simple enough to adopt in commerce platforms (e.g. Shopify, custom carts).
 
----
-
 ## Repository Structure
 
-Current layout:
-
-- `spec/v1.0/pod-json-v1.0.md`  
-  Human-readable **POD-JSON v1.0** specification.
-
-- `schemas/pod-order.v1.json`  
-  JSON Schema for validating a `PodOrder` document.
-
-- `examples/`  
-  Example POD-JSON payloads:
-  - `simple-tshirt.json` – minimal single-side T-shirt example
-  - (more examples will be added over time)
-
-- `docs/` (optional, internal)  
-  Draft content for future documentation / GitHub Pages site.
-
----
+- `spec/v1.0/pod-json-v1.0.md` — Human-readable POD-JSON v1.0 specification.
+- `schemas/pod-order.v1.json` — JSON Schema for validating a PodOrder.
+- `examples/` — Example POD-JSON payloads.
+- `docs/` — Internal future documentation drafts.
 
 ## Core Concepts
 
-POD-JSON v1.0 centers around a few key objects:
+- **PodOrder** — top-level object describing one order.
+- **PodLineItem** — one product.
+- **PodSide** — a printable side.
+- **PodDesignLayer** — an element on the print area.
 
-- **`PodOrder`** – top-level object representing one order.
-- **`PodLineItem`** – one product in that order (e.g. one T-shirt).
-- **`PodSide`** – a printable side (front, back, sleeves).
-- **`PodDesignLayer`** – one design element on a side (image / SVG / text).
+See `spec/v1.0/pod-json-v1.0.md` for full details.
 
-The JSON Schema in `schemas/pod-order.v1.json` defines these structures formally.
+## Versioning
 
-For the full description of all fields, see:
+Semantic versioning: `MAJOR.MINOR.PATCH`.
 
-- [`spec/v1.0/pod-json-v1.0.md`](spec/v1.0/pod-json-v1.0.md)
+Current: **1.0.0 (draft)**  
+`pod_json_version` must be `"1.0.0"`.
 
----
+## Contribution
 
-## Using POD-JSON
+Currently private. Contributions handled directly.
 
-### 1. Validation
+## License
 
-You can validate POD-JSON documents against the schema in `schemas/pod-order.v1.json` using any JSON Schema validator (Node, Python, PHP, etc.).
+To be decided (MIT / Apache 2.0 candidate).
 
-Example (Node, pseudo-code):
+## Authors
 
-```js
-// load pod-order.v1.json as your JSON Schema
-// validate incoming POD-JSON payloads before processing
+Developed by **Dinschrift GmbH** / **Rich Green**.
