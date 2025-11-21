@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/pod-order.v1.json",
+  "$id": "https://pod-json.org/schemas/pod-order.v1.json",
   "title": "PodOrder",
   "type": "object",
   "required": ["pod_json_version", "line_items"],
@@ -9,12 +9,439 @@
       "type": "string",
       "const": "1.0.0"
     },
+    "order_id": {
+      "type": ["string", "null"]
+    },
+    "external_order_ref": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "source": {
+      "type": ["object", "null"],
+      "properties": {
+        "channel": {
+          "type": ["string", "null"]
+        },
+        "shop_domain": {
+          "type": ["string", "null"]
+        },
+        "app_name": {
+          "type": ["string", "null"]
+        },
+        "app_version": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "customer": {
+      "type": ["object", "null"],
+      "properties": {
+        "customer_id": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"],
+          "format": "email"
+        },
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "shipping_address": {
+      "type": ["object", "null"],
+      "properties": {
+        "name": {
+          "type": ["string", "null"]
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "street_1": {
+          "type": ["string", "null"]
+        },
+        "street_2": {
+          "type": ["string", "null"]
+        },
+        "postal_code": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "country_code": {
+          "type": ["string", "null"],
+          "minLength": 2,
+          "maxLength": 2
+        }
+      },
+      "additionalProperties": false
+    },
     "line_items": {
       "type": "array",
       "items": {
-        "type": "object"
-      }
+        "$ref": "#/$defs/PodLineItem"
+      },
+      "minItems": 1
+    },
+    "production": {
+      "type": ["object", "null"],
+      "properties": {
+        "priority": {
+          "type": ["string", "null"],
+          "enum": ["standard", "express", null]
+        },
+        "due_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "print_provider": {
+          "type": ["string", "null"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "totals": {
+      "type": ["object", "null"],
+      "properties": {
+        "subtotal": {
+          "type": ["string", "null"]
+        },
+        "shipping": {
+          "type": ["string", "null"]
+        },
+        "tax": {
+          "type": ["string", "null"]
+        },
+        "discount": {
+          "type": ["string", "null"]
+        },
+        "grand_total": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": ["object", "null"],
+      "properties": {
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false,
+  "$defs": {
+    "PodLineItem": {
+      "type": "object",
+      "required": ["line_item_id", "sides"],
+      "properties": {
+        "line_item_id": {
+          "type": "string"
+        },
+        "sku": {
+          "type": ["string", "null"]
+        },
+        "product_ref": {
+          "type": ["object", "null"],
+          "properties": {
+            "catalog_id": {
+              "type": ["string", "null"]
+            },
+            "variant_id": {
+              "type": ["string", "null"]
+            },
+            "barcode": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "color_name": {
+          "type": ["string", "null"]
+        },
+        "color_code": {
+          "type": ["string", "null"]
+        },
+        "size": {
+          "type": ["string", "null"]
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unit_price": {
+          "type": ["string", "null"]
+        },
+        "line_total": {
+          "type": ["string", "null"]
+        },
+        "print_profile": {
+          "type": ["string", "null"]
+        },
+        "sides": {
+          "type": "object",
+          "properties": {
+            "front": {
+              "$ref": "#/$defs/PodSideOrNull"
+            },
+            "back": {
+              "$ref": "#/$defs/PodSideOrNull"
+            },
+            "left_sleeve": {
+              "$ref": "#/$defs/PodSideOrNull"
+            },
+            "right_sleeve": {
+              "$ref": "#/$defs/PodSideOrNull"
+            }
+          },
+          "additionalProperties": true
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "PodSideOrNull": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/PodSide"
+        }
+      ]
+    },
+    "PodSide": {
+      "type": "object",
+      "required": ["enabled", "print_area", "design_layers"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "print_area": {
+          "type": "object",
+          "properties": {
+            "print_area_id": {
+              "type": "string"
+            },
+            "label": {
+              "type": ["string", "null"]
+            },
+            "canvas_size": {
+              "type": "object",
+              "properties": {
+                "width_mm": {
+                  "type": "number"
+                },
+                "height_mm": {
+                  "type": "number"
+                },
+                "dpi": {
+                  "type": "integer"
+                }
+              },
+              "required": ["width_mm", "height_mm", "dpi"],
+              "additionalProperties": false
+            },
+            "origin": {
+              "type": ["string", "null"]
+            },
+            "coordinate_space": {
+              "type": "string",
+              "enum": ["mm", "px"]
+            }
+          },
+          "required": ["print_area_id", "canvas_size"],
+          "additionalProperties": false
+        },
+        "design_layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PodDesignLayer"
+          }
+        },
+        "render_preview": {
+          "type": ["object", "null"],
+          "properties": {
+            "packshot_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "preview_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            }
+          },
+          "additionalProperties": false
+        },
+        "production_settings": {
+          "type": ["object", "null"],
+          "properties": {
+            "print_method": {
+              "type": ["string", "null"]
+            },
+            "white_underbase": {
+              "type": ["boolean", "null"]
+            },
+            "color_profile": {
+              "type": ["string", "null"]
+            },
+            "max_rip_resolution_dpi": {
+              "type": ["integer", "null"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "PodDesignLayer": {
+      "type": "object",
+      "required": ["layer_id", "type"],
+      "properties": {
+        "layer_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "svg", "text"]
+        },
+        "source": {
+          "type": ["object", "null"],
+          "properties": {
+            "url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "mime_type": {
+              "type": ["string", "null"]
+            },
+            "checksum_sha256": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "x_mm": {
+              "type": "number"
+            },
+            "y_mm": {
+              "type": "number"
+            },
+            "anchor": {
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["x_mm", "y_mm"],
+          "additionalProperties": false
+        },
+        "size": {
+          "type": "object",
+          "properties": {
+            "width_mm": {
+              "type": "number"
+            },
+            "height_mm": {
+              "type": "number"
+            },
+            "lock_aspect_ratio": {
+              "type": ["boolean", "null"]
+            }
+          },
+          "required": ["width_mm", "height_mm"],
+          "additionalProperties": false
+        },
+        "rotation_deg": {
+          "type": "number",
+          "default": 0
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "z_index": {
+          "type": "integer",
+          "default": 0
+        },
+        "text": {
+          "type": ["object", "null"],
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "font_family": {
+              "type": ["string", "null"]
+            },
+            "font_size_pt": {
+              "type": ["number", "null"]
+            },
+            "fill_color": {
+              "type": ["string", "null"]
+            },
+            "stroke_color": {
+              "type": ["string", "null"]
+            },
+            "stroke_width_pt": {
+              "type": ["number", "null"]
+            },
+            "text_align": {
+              "type": ["string", "null"],
+              "enum": ["left", "center", "right", null]
+            },
+            "line_height": {
+              "type": ["number", "null"]
+            },
+            "letter_spacing": {
+              "type": ["number", "null"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "effects": {
+          "type": ["object", "null"],
+          "properties": {
+            "knockout_background": {
+              "type": ["boolean", "null"]
+            },
+            "distress_profile": {
+              "type": ["string", "null"]
+            },
+            "blend_mode": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }
