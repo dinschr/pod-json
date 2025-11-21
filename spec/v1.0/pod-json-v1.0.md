@@ -1,30 +1,21 @@
 # POD-JSON v1.0 Specification
 
-**POD-JSON** is a JSON format for describing print-on-demand products (especially apparel) in a way that:
+**POD-JSON** is a JSON format for describing **print-on-demand (POD) products**, starting with apparel.
 
-- Is easy for AI systems to generate from natural language
-- Is stable enough for production workflows (RIP, DTG, DTF, screen, etc.)
-- Can be embedded inside ecommerce platforms (e.g. Shopify orders)
+It is designed to be:
 
-## 1. Version
+- **AI-friendly** – easy to generate from natural language prompts.
+- **Production-ready** – contains enough detail for RIP and print workflows.
+- **Platform-neutral** – can be embedded inside ecommerce systems (e.g. Shopify orders).
+- **Extensible** – allows vendor-specific data via `extensions`.
 
-- `pod_json_version`: `"1.0.0"`
+This document defines **POD-JSON v1.0.0**.
 
-## 2. Top-level: `PodOrder`
+---
 
-A `PodOrder` represents one logical order that contains one or more line items.
+## 1. Versioning
 
-```jsonc
-{
-  "pod_json_version": "1.0.0",
-  "order_id": "WEB-2025-000123",
-  "external_order_ref": "shopify:123456789",
-  "currency": "CHF",
-  "source": { "...": "..." },
-  "customer": { "...": "..." },
-  "shipping_address": { "...": "..." },
-  "line_items": [ { /* PodLineItem */ } ],
-  "production": { "...": "..." },
-  "totals": { "...": "..." },
-  "meta": { "...": "..." }
-}
+The top-level field:
+
+```json
+"pod_json_version": "1.0.0"
