@@ -1,0 +1,63 @@
+{
+  "pod_json_version": "1.0.0",
+  "order_id": "EXAMPLE-0001",
+  "currency": "CHF",
+  "source": {
+    "channel": "shopify",
+    "shop_domain": "dinschrift.ch",
+    "app_name": "Dinschrift Designer",
+    "app_version": "2.2.0"
+  },
+  "customer": null,
+  "shipping_address": null,
+  "line_items": [
+    {
+      "line_item_id": "1",
+      "sku": "STTU758-C504-L",
+      "name": "Stanley Stella Creator T-Shirt",
+      "color_name": "Vintage White",
+      "color_code": "C504",
+      "size": "L",
+      "quantity": 1,
+      "print_profile": "DTG_LIGHT",
+      "sides": {
+        "front": {
+          "enabled": true,
+          "print_area": {
+            "print_area_id": "front",
+            "label": "Front Center",
+            "canvas_size": {
+              "width_mm": 320,
+              "height_mm": 420,
+              "dpi": 300
+            },
+            "origin": "top_center",
+            "coordinate_space": "mm"
+          },
+          "design_layers": [],
+          "render_preview": null,
+          "production_settings": {
+            "print_method": "dtg",
+            "white_underbase": false,
+            "color_profile": "sRGB",
+            "max_rip_resolution_dpi": 600
+          }
+        },
+        "back": null,
+        "left_sleeve": null,
+        "right_sleeve": null
+      },
+      "extensions": {}
+    }
+  ],
+  "production": {
+    "priority": "standard",
+    "due_date": null,
+    "print_provider": "internal",
+    "notes": null
+  },
+  "totals": null,
+  "meta": {
+    "created_at": "2025-11-21T10:20:00Z"
+  }
+}
