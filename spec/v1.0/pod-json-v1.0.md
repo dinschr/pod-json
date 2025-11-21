@@ -1,42 +1,28 @@
 # POD-JSON v1.0 Specification
 
-POD-JSON is an open JSON format for describing print-on-demand (POD) products, especially apparel.
+POD-JSON is an open JSON format for describing print-on-demand (POD) products.
 
-It is designed to be:
-
-- AI-friendly – easy to generate from natural language prompts  
-- Production-ready – contains enough detail for RIP and print workflows  
-- Platform-neutral – can be embedded inside ecommerce systems (e.g. Shopify Orders)  
-- Extensible – allows vendor-specific data via “extensions”  
-
-This document defines POD-JSON version 1.0.0.
-
--------------------------------------------------------
-1. Versioning
--------------------------------------------------------
+## 1. Versioning
 
 The top-level field:
 
-"pod_json_version": "1.0.0"
+```json
+{
+  "pod_json_version": "1.0.0"
+}
+```
 
-• Is required  
-• Uses semantic versioning (MAJOR.MINOR.PATCH)  
-• This document defines version 1.0.0  
+- Required
+- Uses semantic versioning (MAJOR.MINOR.PATCH)
+- This document defines version 1.0.0
 
-Future versions:
+## 2. Top-Level Structure: PodOrder
 
-• PATCH: backwards compatible (1.0.x)  
-• MINOR: backwards compatible additions (1.x.0)  
-• MAJOR: breaking changes (2.0.0)
+A PodOrder represents one complete print order.
 
--------------------------------------------------------
-2. Top-Level Structure: PodOrder
--------------------------------------------------------
+### Example
 
-A PodOrder represents one complete print order containing one or more items.
-
-Example:
-
+```json
 {
   "pod_json_version": "1.0.0",
   "order_id": "WEB-2025-000123",
@@ -82,70 +68,15 @@ Example:
     "updated_at": "2025-11-21T10:16:00Z"
   }
 }
+```
 
-Field descriptions:
+## 3. PodLineItem
 
-pod_json_version (string, required)  
-Version of the POD-JSON spec.
+Describes a product and print configuration.
 
-order_id (string|null)  
-Internal ID for the order.
+### Example
 
-external_order_ref (string|null)  
-Reference to external system, e.g. Shopify.
-
-currency (string|null)  
-ISO 4217 code: CHF, EUR, USD.
-
-source (object|null):  
-• channel  
-• shop_domain  
-• app_name  
-• app_version  
-
-customer (object|null):  
-• customer_id  
-• email  
-• first_name  
-• last_name  
-
-shipping_address (object|null):  
-• name  
-• company  
-• street_1  
-• street_2  
-• postal_code  
-• city  
-• country_code  
-
-line_items (array, required)  
-One or more PodLineItem entries.
-
-production (object|null):  
-• priority (“standard” | “express”)  
-• due_date (ISO datetime)  
-• print_provider  
-• notes  
-
-totals (object|null):  
-• subtotal  
-• shipping  
-• tax  
-• discount  
-• grand_total  
-
-meta (object|null):  
-• created_at  
-• updated_at  
-
--------------------------------------------------------
-3. PodLineItem
--------------------------------------------------------
-
-Each PodLineItem describes one product + print configuration.
-
-Example:
-
+```json
 {
   "line_item_id": "item-1",
   "sku": "STTU758-C504-L",
@@ -165,51 +96,13 @@ Example:
   "sides": {},
   "extensions": {}
 }
+```
 
-Fields:
+## 4. PodSide
 
-line_item_id (string, required)  
-Unique inside the order.
+### Example
 
-sku (string|null)
-
-product_ref (object|null):  
-• catalog_id  
-• variant_id  
-• barcode  
-
-name (string|null)
-
-color_name (string|null)  
-color_code (string|null)  
-size (string|null)
-
-quantity (integer, required)  
-
-unit_price (string|null)  
-line_total (string|null)
-
-print_profile (string|null)  
-Used for RIP mapping, e.g. DTG_LIGHT, DTG_DARK.
-
-sides (object, required):  
-• front  
-• back  
-• left_sleeve  
-• right_sleeve  
-Each is PodSide or null.
-
-extensions (object)  
-Vendor-specific fields.
-
--------------------------------------------------------
-4. PodSide
--------------------------------------------------------
-
-Describes a printable side of a garment.
-
-Example:
-
+```json
 {
   "enabled": true,
   "print_area": {
@@ -235,38 +128,13 @@ Example:
     "max_rip_resolution_dpi": 600
   }
 }
+```
 
-Fields:
+## 5. PodDesignLayer
 
-enabled (boolean, required)
+### Example
 
-print_area (object, required):  
-• print_area_id  
-• label  
-• canvas_size (width_mm, height_mm, dpi)  
-• origin  
-• coordinate_space (“mm” or “px”)
-
-design_layers (array)
-
-render_preview (object|null):  
-• packshot_url  
-• preview_url
-
-production_settings (object|null):  
-• print_method  
-• white_underbase  
-• color_profile  
-• max_rip_resolution_dpi  
-
--------------------------------------------------------
-5. PodDesignLayer
--------------------------------------------------------
-
-Each layer represents one element on the print.
-
-Example:
-
+```json
 {
   "layer_id": "L1",
   "type": "image",
@@ -295,51 +163,11 @@ Example:
     "blend_mode": "normal"
   }
 }
+```
 
-Fields:
+## 6. Minimal AI Example
 
-layer_id (string)  
-type (“image”, “svg”, “text”)
-
-source (object|null):  
-• url  
-• mime_type  
-• checksum_sha256  
-
-position:  
-• x_mm  
-• y_mm  
-• anchor  
-
-size:  
-• width_mm  
-• height_mm  
-• lock_aspect_ratio  
-
-rotation_deg  
-opacity  
-z_index  
-
-text (object|null for text layers):  
-• content  
-• font_family  
-• font_size_pt  
-• fill_color  
-• stroke_color  
-• stroke_width_pt  
-• text_align  
-• line_height  
-• letter_spacing  
-
-effects (object|null):  
-• knockout_background  
-• distress_profile  
-• blend_mode  
-
--------------------------------------------------------
-6. Minimal AI-friendly Example
--------------------------------------------------------
-
+```json
 {
   "pod_json_version": "1.0.0",
   "order_id": "AI-ORDER-0001",
@@ -363,19 +191,12 @@ effects (object|null):
     "created_at": "2025-11-21T10:20:00Z"
   }
 }
+```
 
--------------------------------------------------------
-7. JSON Schema
--------------------------------------------------------
+## 7. JSON Schema
 
-The authoritative schema for POD-JSON v1.0 is located at:
+See: schemas/pod-order.v1.json
 
-schemas/pod-order.v1.json
+## 8. Status
 
--------------------------------------------------------
-8. Status
--------------------------------------------------------
-
-Version: 1.0.0 (draft)  
-Scope: Apparel  
-Future expansions: more product types, more print methods.
+Version 1.0.0 (draft)
