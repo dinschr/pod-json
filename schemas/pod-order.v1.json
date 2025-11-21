@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/pod-order.v1.json",
+  "title": "PodOrder",
+  "type": "object",
+  "required": ["pod_json_version", "line_items"],
+  "properties": {
+    "pod_json_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": true
+}
