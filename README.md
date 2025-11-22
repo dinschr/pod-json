@@ -1,3 +1,7 @@
+> ⚠️ **Status: Draft (Work in Progress)**  
+> POD-JSON v1.0 is currently under active development.  
+> The specification may change without notice until the first stable release.
+
 # POD-JSON Specification
 
 POD-JSON is an open JSON format for describing **print-on-demand (POD) products**, starting with apparel.
