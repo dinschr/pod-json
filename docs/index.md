@@ -1,3 +1,7 @@
+> ⚠️ **Draft Specification – Not Final**  
+> This documentation reflects an early version of POD-JSON v1.0.  
+> Feedback and suggestions are welcome while the standard evolves.
+
 # POD-JSON Documentation
 
 Welcome to the official documentation hub for **POD-JSON**, an open JSON format for describing print‑on‑demand (POD) products.
