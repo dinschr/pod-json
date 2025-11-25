@@ -1,133 +1,107 @@
-> ⚠️ **Draft Specification – Not Final**  
-> This documentation reflects an early version of POD-JSON v1.0.  
-> Feedback and suggestions are welcome while the standard evolves.
+# POD-JSON – Overview
 
-# POD-JSON Documentation
+POD-JSON defines how one machine can ask another machine to print and ship custom T-shirts.
 
-Welcome to the official documentation hub for **POD-JSON**, an open JSON format for describing print‑on‑demand (POD) products.
+The goal is **simplicity**:
 
-POD-JSON provides a consistent, platform‑neutral way to describe:
+- Simple for integrators to understand and implement.
+- Simple for Dinschrift to map into its real production workflow.
+- Focused on **orders**, not on every possible POD scenario.
 
-- Products (e.g. T‑shirts, hoodies, totes)
-- Print areas (front, back, sleeves)
-- Design layers (images, SVG, text)
-- Production settings
-- Everything needed for a complete print job
+This repository defines:
 
-This documentation will grow as the specification evolves.
+1. **POD-JSON Lite** – a minimal JSON order format.
+2. A **machine-to-machine Order API** concept that uses POD-JSON Lite.
 
 ---
 
-## 📘 Specification
+## 1. Design goals
 
-The current version of the specification is:
+- **Workflow first**  
+  The format is designed around Dinschrift’s actual workflow:  
+  SKU-based products, fixed print areas, RIP-friendly profiles and naming.
 
-**POD-JSON v1.0 (draft)**  
-→ [View the full spec](../spec/v1.0/pod-json-v1.0.md)
+- **Minimal JSON**  
+  Only the information that is needed to:
+  - know what to print,
+  - where to ship it, and
+  - how many items to produce.
 
-This document defines:
+- **Easy for integrators**  
+  An integrator should be able to:
+  - pick a SKU,
+  - supply a design file URL or design ID,
+  - choose a print profile (e.g. `LGT` or `DRK`),
+  - send one order JSON.
 
-- PodOrder  
-- PodLineItem  
-- PodSide  
-- PodDesignLayer  
-- Production metadata  
-- Required and optional fields  
-- Examples  
-
----
-
-## 🧩 JSON Schema
-
-The schema provides a strict machine‑readable definition:
-
-- **POD‑JSON Order Schema**  
-  → [`schemas/pod-order.v1.json`](../schemas/pod-order.v1.json)
-
-Use this to validate incoming POD‑JSON payloads in your API, webshop, or print pipeline.
+- **Stable but evolvable**  
+  The format carries a `schemaVersion` so future versions can extend it without breaking current users.
 
 ---
 
-## 📦 Examples
+## 2. POD-JSON Lite
 
-Example POD‑JSON documents:
+POD-JSON Lite is the core order object that integrators send to the Dinschrift Order API.
 
-- **Simple T-shirt**  
-  → [`examples/simple-tshirt.json`](../examples/simple-tshirt.json)
+Key ideas:
 
-More examples (hoodie, tote bag, multi‑side items) will be added.
+- One **Order** contains:
+  - Order metadata (IDs, currency, shipping method)
+  - Shipping address
+  - One or more **OrderLines**
 
----
+- Each **OrderLine** contains:
+  - A SKU
+  - A quantity
+  - A **PrintSpec**
 
-## 🛣️ Roadmap
+- The **PrintSpec** tells Dinschrift:
+  - Which side to print
+  - Which print profile to use (e.g. `LGT`, `DRK`, `WHTP`)
+  - Where to get the design:
+    - either a `designUrl`
+    - or a `designId` already known to Dinschrift
 
-Future releases and feature plans are tracked here:
+Print areas, DPI, coordinates, RIP configuration etc. are handled internally by Dinschrift based on SKU, side and profile.
 
-→ [`ROADMAP.md`](../ROADMAP.md)
-
----
-
-## 🧭 Project Goals
-
-POD‑JSON aims to:
-
-- Make AI‑generated POD orders reliable and structured  
-- Standardize product/print metadata across systems  
-- Enable easy integration between design tools, AI models, ecommerce, and production  
-- Provide a common language for POD workflows  
-
----
-
-## 📜 Versioning
-
-POD‑JSON follows **semantic versioning**:
-
-- `1.0.x` – patches  
-- `1.x.0` – backwards‑compatible additions  
-- `2.0.0` – breaking changes  
-
-Current version: **1.0.0 (draft)**
+Full details:  
+➡️ [POD-JSON Lite format](./pod-json-lite.md)
 
 ---
 
-## 🧪 Status
+## 3. Order API (concept)
 
-The project is currently under active development in a private repository.  
-Public release and GitHub Pages hosting may follow once the spec stabilizes.
+The Order API is a simple HTTP JSON API that uses POD-JSON Lite as its order payload.
 
----
+Planned core endpoints:
 
-## 👤 Authors
+- `GET /v1/health` – basic health check
+- `GET /v1/products` – list available products
+- `GET /v1/skus/{sku}` – detailed info for a single SKU
+- `GET /v1/stock` – check stock for a specific SKU
+- `POST /v1/stock/query` – batch stock query
+- `POST /v1/orders` – submit an order (POD-JSON Lite)
+- `GET /v1/orders/{id}` – read order status and details
 
-POD‑JSON is developed and maintained by:
+Authentication is done with **Bearer tokens** issued by Dinschrift for each integration partner.
 
-**Dinschrift GmbH**  
-**Rich Green**
+Payments and billing are treated as a **separate concern** (e.g. invoice or prepaid credit). The API itself only needs to know whether an account is allowed to place orders.
 
-If this project becomes public, contributors will be listed here.
-
----
-
-## 📂 Repository Structure
-
-```
-pod-json-spec/
- ├── spec/
- │    └── v1.0/
- │         └── pod-json-v1.0.md
- ├── schemas/
- │    └── pod-order.v1.json
- ├── examples/
- │    └── simple-tshirt.json
- ├── docs/
- │    └── index.md
- ├── ROADMAP.md
- └── README.md
-```
+Full details:  
+➡️ [Order API concept](./order-api.md)
 
 ---
 
-## 💬 Feedback
+## 4. Status & usage
 
-This documentation is a starting point and will expand as the specification grows.  
-If you'd like to add more sections or restructure the docs, feel free to request it.
+> **Pilot / draft**  
+> This specification is in an experimental phase and may change based on feedback and internal learning.
+
+If you are interested in integrating with Dinschrift using this spec:
+
+- Get in touch with Dinschrift to discuss:
+  - commercial terms,
+  - access to a test environment,
+  - API key issuance.
+
+Implementation of this spec without a direct agreement does not automatically give access to Dinschrift’s production systems.
