@@ -8,10 +8,10 @@ The goal is **simplicity**:
 - Simple for Dinschrift to map into its real production workflow.
 - Focused on **orders**, not on every possible POD scenario.
 
-This repository defines:
+This repository currently defines:
 
 1. **POD-JSON Lite** – a minimal JSON order format.
-2. A **machine-to-machine Order API** concept that uses POD-JSON Lite.
+2. A **machine-to-machine Order API concept** that uses POD-JSON Lite.
 
 ---
 
@@ -56,16 +56,17 @@ Key ideas:
   - A **PrintSpec**
 
 - The **PrintSpec** tells Dinschrift:
+
   - Which side to print
-  - Which print profile to use (e.g. `LGT`, `DRK`, `WHTP`)
+  - Which print profile to use (e.g. `LGT`, `DRK`, `WHTP`, `NOTRANS`)
   - Where to get the design:
     - either a `designUrl`
     - or a `designId` already known to Dinschrift
 
 Print areas, DPI, coordinates, RIP configuration etc. are handled internally by Dinschrift based on SKU, side and profile.
 
-Full details:  
-➡️ [POD-JSON Lite format](./pod-json-lite.md)
+👉 Full details:  
+[**POD-JSON Lite format**](./pod-json-lite.md)
 
 ---
 
@@ -87,8 +88,8 @@ Authentication is done with **Bearer tokens** issued by Dinschrift for each inte
 
 Payments and billing are treated as a **separate concern** (e.g. invoice or prepaid credit). The API itself only needs to know whether an account is allowed to place orders.
 
-Full details:  
-➡️ [Order API concept](./order-api.md)
+👉 Full details:  
+[**Order API concept**](./order-api.md)
 
 ---
 
@@ -104,4 +105,12 @@ If you are interested in integrating with Dinschrift using this spec:
   - access to a test environment,
   - API key issuance.
 
-Implementation of this spec without a direct agreement does not automatically give access to Dinschrift’s production systems.
+Implementation of this spec without a direct agreement does **not** automatically give access to Dinschrift’s production systems.
+
+---
+
+## 5. Repository contents
+
+- [`docs/pod-json-lite.md`](./pod-json-lite.md) – POD-JSON Lite order format
+- [`docs/order-api.md`](./order-api.md) – Order API concept
+- `README.md` – high-level description and links
