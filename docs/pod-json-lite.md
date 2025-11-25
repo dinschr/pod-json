@@ -18,26 +18,26 @@ An Order is the root object submitted to the Order API.
 
 ### 1.1. Fields
 
-- `schemaVersion` (string, required)  
+- **`schemaVersion`** (string, required)  
   Must be `pod-json-lite-0.1` for this version.
 
-- `orderId` (string, required)  
+- **`orderId`** (string, required)  
   The integrator’s primary order reference (e.g. shop order number).  
   Must be unique per integrator.
 
-- `externalRef` (string, optional)  
+- **`externalRef`** (string, optional)  
   Secondary reference (e.g. cart ID, marketplace ID).
 
-- `currency` (string, required)  
+- **`currency`** (string, required)  
   ISO 4217 currency code, e.g. `"CHF"`, `"EUR"`.
 
-- `shippingMethod` (string, required)  
+- **`shippingMethod`** (string, required)  
   Code agreed between the integrator and Dinschrift, e.g. `"POST_PRIORITY"`.
 
-- `shippingAddress` (object, required)  
+- **`shippingAddress`** (object, required)  
   A [Shipping Address](#3-shipping-address) object.
 
-- `lines` (array of objects, required)  
+- **`lines`** (array of objects, required)  
   List of [OrderLines](#2-orderline).
 
 ---
@@ -48,20 +48,20 @@ Each OrderLine represents a single SKU and quantity, with associated print infor
 
 ### 2.1. Fields
 
-- `lineId` (string, required)  
+- **`lineId`** (string, required)  
   Line identifier, unique within the order (e.g. `"1"`, `"A1"`).
 
-- `sku` (string, required)  
+- **`sku`** (string, required)  
   The exact SKU code Dinschrift recognises (product + colour + size).  
   Example: `"STTU758_C001_M"`.
 
-- `quantity` (integer, required)  
+- **`quantity`** (integer, required)  
   Number of units to produce. Must be `>= 1`.
 
-- `print` (object, required)  
+- **`print`** (object, required)  
   A [PrintSpec](#4-printspec) object.
 
-- `lineNote` (string, optional)  
+- **`lineNote`** (string, optional)  
   Free text note for debugging or operator hints. Not guaranteed to be processed automatically.
 
 ---
@@ -72,20 +72,20 @@ The shipping address describes where the parcel should be delivered.
 
 ### 3.1. Fields
 
-- `firstName` (string, required)  
-- `lastName` (string, required)  
-- `company` (string, optional)  
-- `street1` (string, required)  
-- `street2` (string, optional)  
-- `postalCode` (string, required)  
-- `city` (string, required)  
-- `countryCode` (string, required)  
+- **`firstName`** (string, required)  
+- **`lastName`** (string, required)  
+- **`company`** (string, optional)  
+- **`street1`** (string, required)  
+- **`street2`** (string, optional)  
+- **`postalCode`** (string, required)  
+- **`city`** (string, required)  
+- **`countryCode`** (string, required)  
   ISO 3166-1 alpha-2 country code, e.g. `"CH"`.
 
-- `phone` (string, optional but recommended)  
+- **`phone`** (string, optional but recommended)  
   For carriers that require a phone number.
 
-- `email` (string, optional but recommended)  
+- **`email`** (string, optional but recommended)  
   For shipping notifications where supported.
 
 ---
@@ -96,8 +96,8 @@ The PrintSpec describes *how* to print the design on the chosen SKU.
 
 ### 4.1. Fields
 
-- `side` (string, required)  
-  Where to print. Allowed values (initial set):
+- **`side`** (string, required)  
+  Where to print. Allowed values:
 
   - `"front"`
   - `"back"`
@@ -105,42 +105,38 @@ The PrintSpec describes *how* to print the design on the chosen SKU.
   - `"rightSleeve"`
   - `"other"`
 
-  The exact meaning and available options depend on the SKU and the commercial agreement.
-
-- `profile` (string, required)  
+- **`profile`** (string, required)  
   Print profile code understood by Dinschrift. Examples:
 
-  - `"LGT"` – profile for light garments
-  - `"DRK"` – profile for dark garments
-  - `"WHTP"` – white print / special profile
-  - `"NOTRANS"` – specific internal use profile
+  - `"LGT"` – light garments  
+  - `"DRK"` – dark garments  
+  - `"WHTP"` – white print  
+  - `"NOTRANS"` – non-transfer profile  
 
-  Exact codes and usage are documented per integrator agreement.
+  Exact codes and usage depend on the SKU and partner agreement.
 
-- **Exactly one** of the following design reference fields:
+- **One of:**
 
-  - `designUrl` (string, optional)  
-    HTTPS URL pointing to the artwork file (e.g. PNG, SVG, PDF).  
-    The integrator is responsible for ensuring:
-    - the URL is reachable by Dinschrift’s backend,
-    - the file format is supported as per agreement.
+  - **`designUrl`** (string, optional)  
+    HTTPS URL to the artwork file (PNG, SVG, PDF). Must be reachable externally by Dinschrift’s backend.
 
-  - `designId` (string, optional)  
-    An identifier for a design that Dinschrift already knows (for example from a previous upload or internal configuration).
+  - **`designId`** (string, optional)  
+    Identifier of a design previously uploaded or known to Dinschrift.
 
-- `notes` (string, optional)  
-  Optional instructions for operators. Not guaranteed to be processed automatically.
+  At least **one** of these must be present.
+
+- **`notes`** (string, optional)  
+  Free-text notes for operators (not guaranteed to be processed automatically).
 
 ### 4.2. Design reference rules
 
-At least one of `designUrl` or `designId` **must** be present.  
-If both are present, `designUrl` SHOULD be treated as primary unless otherwise agreed.
+- At least **one** of `designUrl` or `designId` must be provided.  
+- If both are provided, `designUrl` SHOULD be treated as primary.  
+- Design files should meet format and DPI guidelines provided separately.
 
 ---
 
 ## 5. Example Order
-
-The following is a complete example of a POD-JSON Lite order:
 
 ```json
 {
