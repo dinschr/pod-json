@@ -1,58 +1,57 @@
-> ⚠️ **Status: Draft (Work in Progress)**  
-> POD-JSON v1.0 is currently under active development.  
-> The specification may change without notice until the first stable release.
+# POD-JSON – Print-on-Demand JSON & Order API
 
-# POD-JSON Specification
+POD-JSON is a simple JSON format and HTTP API concept for sending print-on-demand T-shirt orders from one machine to another.
 
-POD-JSON is an open JSON format for describing **print-on-demand (POD) products**, starting with apparel.
+This repository describes:
 
-It is designed to be:
+- **POD-JSON Lite** – a minimal order data model that fits Dinschrift’s real production workflow.
+- The **Order API** concept – how external systems can submit orders, check stock, and read order status.
 
-- **AI-friendly** – easy to generate from natural language prompts
-- **Production-ready** – carries everything a print workflow / RIP needs
-- **Platform-neutral** – can be embedded into Shopify orders or any other system
-- **Extensible** – allows vendor-specific fields via `extensions`
+The focus is on:
 
-> Status: **Draft – internal work-in-progress**
+- Keeping the format **simple** for integrators.
+- Matching **Dinschrift’s internal workflow** (SKU-based, RIP-driven production).
+- Being easy to evolve as we learn.
 
-## Goals
+> **Status:**  
+> This specification is in **pilot / draft** state and may change. Do not rely on it in production without a direct agreement with Dinschrift.
 
-1. Provide a stable JSON structure for T-shirt and apparel printing.
-2. Make it easy for AI systems to convert text prompts into POD orders.
-3. Standardize how print areas, design layers, and production settings are described.
-4. Be simple enough to adopt in commerce platforms (e.g. Shopify, custom carts).
+---
 
-## Repository Structure
+## Documentation
 
-- `spec/v1.0/pod-json-v1.0.md` — Human-readable POD-JSON v1.0 specification.
-- `schemas/pod-order.v1.json` — JSON Schema for validating a PodOrder.
-- `examples/` — Example POD-JSON payloads.
-- `docs/` — Internal future documentation drafts.
+- **Overview:**  
+  See [docs/index.md](docs/index.md)
 
-## Core Concepts
+- **POD-JSON Lite format:**  
+  See [docs/pod-json-lite.md](docs/pod-json-lite.md)
 
-- **PodOrder** — top-level object describing one order.
-- **PodLineItem** — one product.
-- **PodSide** — a printable side.
-- **PodDesignLayer** — an element on the print area.
+- **Order API concept (HTTP):**  
+  See [docs/order-api.md](docs/order-api.md)
 
-See `spec/v1.0/pod-json-v1.0.md` for full details.
+---
 
-## Versioning
+## Scope
 
-Semantic versioning: `MAJOR.MINOR.PATCH`.
+This repo contains:
 
-Current: **1.0.0 (draft)**  
-`pod_json_version` must be `"1.0.0"`.
+- The data model for **POD-JSON Lite orders**.
+- A conceptual design for a **machine-to-machine order API**:
+  - submit orders
+  - check stock
+  - fetch basic product/SKU info
+  - read order status
 
-## Contribution
+It does **not** contain:
 
-Currently private. Contributions handled directly.
+- Backend source code
+- API keys or secrets
+- Billing or payment processing implementation
+
+---
 
 ## License
 
-To be decided (MIT / Apache 2.0 candidate).
+Unless otherwise stated in individual files, the written specification in this repository is made available under the **MIT License**.
 
-## Authors
-
-Developed by **Dinschrift GmbH** / **Rich Green**.
+You are free to read, implement, and experiment with this spec. Commercial use with Dinschrift as the print provider requires a separate commercial agreement.
