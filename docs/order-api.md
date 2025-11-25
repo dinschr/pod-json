@@ -1,8 +1,9 @@
 # Order API Concept (POD-JSON Lite)
 
-This document describes a **conceptual** HTTP API that uses POD-JSON Lite as its order payload.
+This document describes a **conceptual REST-style HTTP API** that uses POD-JSON Lite as its order payload.  
+A REST API means the system communicates using standard HTTP methods (GET, POST, etc.) and JSON request/response bodies, making integration simple and predictable for machines.
 
-The purpose is to define a simple, predictable way for an integrator’s system to:
+The purpose of this API is to define a clear workflow for integrators to:
 
 - discover products and SKUs,
 - check stock,
