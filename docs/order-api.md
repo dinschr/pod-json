@@ -20,7 +20,7 @@ The goal is to define a clear, predictable way for an integrator’s system to:
 This section reflects the current state of the private pilot implementation.
 
 - `GET /v1/health` – ✅ Live  
-- `GET /v1/orders/{clientId}` –⚙️ Designed, implementation in progress 
+- `GET /v1/orders/{ClientId}` –⚙️ Designed, implementation in progress 
 - `POST /v1/orders` – ⚙️ Designed, implementation in progress  
 - `GET /v1/orders/{apiOrderId}`
 - Webhooks 
