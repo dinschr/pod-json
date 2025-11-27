@@ -26,49 +26,27 @@ This section reflects the current state of the private pilot implementation.
 - Product & SKU endpoints – 💤 Conceptual (not yet implemented)  
 - Webhooks – 💤 Planned  
 
-The wire protocol and JSON formats are considered **stable enough for pilot use**, but details may still change.
-
 ---
 
 ## 1. Authentication
 
-All endpoints (except `/health`) require authentication using a **Bearer token**.
+All endpoints (except `/health`) require:
 
-Each integration partner receives one or more tokens from Dinschrift via their account log-in.
-
-### 1.1. Request header
-
-```http
+```
 Authorization: Bearer <token>
 ```
 
-Tokens are:
-
-- long, opaque strings  
-- bound to a specific partner account  
-- revocable by Dinschrift at any time
-
-There is no public sign-up at this stage; access is granted manually by Dinschrift.
+No public signup exists; tokens are issued manually.
 
 ---
 
 ## 2. Base URL
 
-For illustration, we assume a base URL:
+Assumed base URL:
 
-```text
+```
 https://api.dinschrift.ch
 ```
-
-All paths below are relative to this base.
-
-Example:
-
-- `GET /v1/health`
-- `GET /v1/orders/{clientId}`
-- `POST /v1/orders`
-
-The actual base URL for test and production environments will be communicated directly to integrators.
 
 ---
 
@@ -76,44 +54,61 @@ The actual base URL for test and production environments will be communicated di
 
 ### 3.1. `GET /v1/health`
 
-Simple check to see if the API is reachable and healthy.
+Simple service status.
 
-- **Auth:** not required (may be open)
-- **Request body:** none
-- **Response:** simple JSON object
+---
 
-Example response:
+# 4. Product & SKU Endpoints
 
-```json
-{
-  "status": "ok",
-  "service": "dinschrift-order-api",
-  "time": "2025-01-01T12:00:00Z"
-}
+These endpoints let integrators browse products, discover SKUs and filter the catalogue efficiently.
+
+---
+
+## 4.1. `GET /v1/products`
+
+Returns a **compact list of product styles** (models) available to the authenticated partner.
+
+Used for building product pickers (T‑shirts, hoodies, pullovers, etc.).
+
+- **Auth:** required  
+- **Query params (optional):**
+  - `category` – filter by category (`tshirt`, `hoodie`, `pullover`)
+  - `brand` – filter by brand (`Stanley/Stella`)
+  - `search` – free‑text search (`heavy`, `organic`, etc.)
+
+---
+
+## 🔍 Query Parameter Examples
+
+### **Get all T-shirts**
+```
+GET /v1/products?category=tshirt
+```
+
+### **Get all Stanley/Stella hoodies**
+```
+GET /v1/products?category=hoodie&brand=Stanley%2FStella
+```
+
+### **Full text search**
+```
+GET /v1/products?search=medium
+```
+
+### **Combine filters**
+```
+GET /v1/products?category=tshirt&brand=Stanley%2FStella&search=heavy
+```
+
+### **Full HTTP header example**
+```http
+GET /v1/products?category=tshirt HTTP/1.1
+Authorization: Bearer <token>
 ```
 
 ---
 
-## 4. Product & SKU endpoints
-
-These endpoints allow integrators to discover which products and SKUs they can order.
-
-> **Status:** conceptual – details will be finalised once the pilot focuses on external product catalogues.
-
-### 4.1. `GET /v1/products`
-
-Returns a **compact list of product styles** (models) available to the authenticated partner.  
-This endpoint is intended for building product pickers such as “all T-Shirts”, “all hoodies”, “all pullovers”, etc.
-
-- **Auth:** required  
-- **Query params (optional):**
-  - `category` – filter by product category, e.g. `tshirt`, `pullover`, `hoodie`.
-  - `brand` – filter by brand, e.g. `Stanley/Stella`.
-  - `search` – simple text search on product name/description.
-
-- **Response:** list of product-level objects (no SKUs in this endpoint).
-
-#### Example response
+## Example Response
 
 ```json
 {
@@ -139,22 +134,26 @@ This endpoint is intended for building product pickers such as “all T-Shirts�
 }
 ```
 
-#### Product-level fields
+---
 
-| Field           | Type   | Description                                            |
-|-----------------|--------|--------------------------------------------------------|
-| `productId`     | string | Internal product code (e.g. `STTU758`).               |
-| `name`          | string | Marketing/product name.                               |
-| `brand`         | string | Brand (e.g. `Stanley/Stella`).                        |
-| `category`      | string | Normalised category (`tshirt`, `pullover`, etc.).     |
-| `description`   | string | Optional human-readable description.                  |
-| `allowedSides`  | array  | Which sides the product can be printed on.            |
-| `printProfiles` | array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.   |
+## Product Fields
 
-> **Note:** This endpoint intentionally does **not** return SKUs to keep the response small and fast.  
-> SKUs are returned via `GET /v1/products/{productId}` and `GET /v1/skus`.
+| Field           | Type   | Description |
+|-----------------|--------|-------------|
+| `productId`     | string | Internal code (`STTU758`) |
+| `name`          | string | Marketing name |
+| `brand`         | string | Brand |
+| `category`      | string | Normalised category |
+| `description`   | string | Optional description |
+| `allowedSides`  | array  | Valid print sides |
+| `printProfiles` | array  | Supported profiles |
+
+> SKUs are available via:  
+> - `GET /v1/products/{productId}`  
+> - `GET /v1/skus`  
 
 ---
+
 
 ### 4.2. `GET /v1/products/{productId}`
 
