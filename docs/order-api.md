@@ -31,9 +31,9 @@ The wire protocol and JSON formats are considered **stable enough for pilot use*
 
 ## 1. Authentication
 
-All endpoints (except possibly `/health`) require authentication using a **Bearer token**.
+All endpoints (except `/health`) require authentication using a **Bearer token**.
 
-Each integration partner receives one or more tokens from Dinschrift.
+Each integration partner receives one or more tokens from Dinschrift via their account log-in.
 
 ### 1.1. Request header
 
