@@ -22,8 +22,8 @@ This section reflects the current state of the private pilot implementation.
 - `GET /v1/health` – ✅ Live  
 - `GET /v1/orders?id=<ClientId>` –⚙️ Designed, implementation in progress 
 - `POST /v1/orders` – ⚙️ Designed, implementation in progress  
-- `GET /v1/orders/{apiOrderId}` – 💤 Planned  
-- Webhooks – 💤 Planned  
+- `GET /v1/orders/{apiOrderId}`
+- Webhooks 
 
 The wire protocol and JSON formats are considered **stable enough for pilot use**, but details may still change.
 
