@@ -1,4 +1,4 @@
-# POD-JSON – Print-on-Demand REST API
+# POD-JSON – Dinschrift Print-on-Demand REST API
 
 POD-JSON is a simple JSON format and REST-style HTTP API concept for sending print-on-demand T-shirt and textile orders **from one machine to another**.
 
