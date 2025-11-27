@@ -23,6 +23,7 @@ This section reflects the current state of the private pilot implementation.
 - `GET /v1/orders/{clientId}` – ⚙️ Designed, implementation in progress  
 - `POST /v1/orders` – ⚙️ Designed, implementation in progress  
 - `GET /v1/orders/{apiOrderId}` – 💤 Planned  
+- Product & SKU endpoints – 💤 Conceptual (not yet implemented)  
 - Webhooks – 💤 Planned  
 
 The wire protocol and JSON formats are considered **stable enough for pilot use**, but details may still change.
@@ -31,7 +32,7 @@ The wire protocol and JSON formats are considered **stable enough for pilot use*
 
 ## 1. Authentication
 
-All endpoints (except `GET /v1/health`) require authentication using a **Bearer token**.
+All endpoints (except `/health`) require authentication using a **Bearer token**.
 
 Each integration partner receives one or more tokens from Dinschrift via their account log-in.
 
@@ -101,12 +102,16 @@ These endpoints allow integrators to discover which products and SKUs they can o
 
 ### 4.1. `GET /v1/products`
 
-Returns the list of products and SKUs available to the authenticated partner.  
-Each SKU includes pricing, colour data, sizing, and a preview image.
+Returns a **compact list of product styles** (models) available to the authenticated partner.  
+This endpoint is intended for building product pickers such as “all T-Shirts”, “all hoodies”, “all pullovers”, etc.
 
 - **Auth:** required  
-- **Query params:** none (v1 keeps it simple)  
-- **Response:** a list of product objects, each containing the SKUs available for the requesting partner.
+- **Query params (optional):**
+  - `category` – filter by product category, e.g. `tshirt`, `pullover`, `hoodie`.
+  - `brand` – filter by brand, e.g. `Stanley/Stella`.
+  - `search` – simple text search on product name/description.
+
+- **Response:** list of product-level objects (no SKUs in this endpoint).
 
 #### Example response
 
@@ -117,36 +122,18 @@ Each SKU includes pricing, colour data, sizing, and a preview image.
       "productId": "STTU758",
       "name": "Creator",
       "brand": "Stanley/Stella",
-      "category": "T-Shirt",
+      "category": "tshirt",
       "description": "Unisex medium fit single jersey T-shirt",
       "allowedSides": ["front", "back"],
-      "printProfiles": ["LGT", "DRK", "NOTRANS"],
-      "skus": [
-        {
-          "sku": "STTU758_C001_S",
-          "colorCode": "C001",
-          "colorName": "Off White",
-          "hex": "#f7f3ef",
-          "size": "S",
-          "image": "https://img.dinschrift.ch/packshots/STTU758_C001_S.jpg",
-          "price": {
-            "unitPrice": 12.50,
-            "currency": "CHF"
-          }
-        },
-        {
-          "sku": "STTU758_C001_M",
-          "colorCode": "C001",
-          "colorName": "Off White",
-          "hex": "#f7f3ef",
-          "size": "M",
-          "image": "https://img.dinschrift.ch/packshots/STTU758_C001_M.jpg",
-          "price": {
-            "unitPrice": 13.20,
-            "currency": "CHF"
-          }
-        }
-      ]
+      "printProfiles": ["LGT", "DRK", "NOTRANS"]
+    },
+    {
+      "productId": "STSU822",
+      "name": "Cruiser",
+      "brand": "Stanley/Stella",
+      "category": "pullover",
+      "description": "Unisex crew neck sweatshirt",
+      "allowedSides": ["front", "back"]
     }
   ]
 }
@@ -154,41 +141,191 @@ Each SKU includes pricing, colour data, sizing, and a preview image.
 
 #### Product-level fields
 
-| Field          | Type   | Description                                          |
-|----------------|--------|------------------------------------------------------|
-| `productId`    | string | Internal product code (e.g. `STTU758`).             |
-| `name`         | string | Marketing/product name.                             |
-| `brand`        | string | Brand (e.g. `Stanley/Stella`).                      |
-| `category`     | string | Product category (e.g. `T-Shirt`).                  |
-| `description`  | string | Optional human-readable description.                |
-| `allowedSides` | array  | Which sides the product can be printed on.         |
-| `printProfiles`| array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.|
-| `skus`         | array  | List of SKU entries available to this partner.     |
+| Field           | Type   | Description                                            |
+|-----------------|--------|--------------------------------------------------------|
+| `productId`     | string | Internal product code (e.g. `STTU758`).               |
+| `name`          | string | Marketing/product name.                               |
+| `brand`         | string | Brand (e.g. `Stanley/Stella`).                        |
+| `category`      | string | Normalised category (`tshirt`, `pullover`, etc.).     |
+| `description`   | string | Optional human-readable description.                  |
+| `allowedSides`  | array  | Which sides the product can be printed on.            |
+| `printProfiles` | array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.   |
 
-#### SKU-level fields
-
-| Field               | Type    | Description                                       |
-|---------------------|---------|---------------------------------------------------|
-| `sku`               | string  | Unique SKU code: `PRODUCT_COLOUR_SIZE`.          |
-| `colorCode`         | string  | Internal colour code.                             |
-| `colorName`         | string  | Human-friendly colour name.                       |
-| `hex`               | string  | HEX colour value for UI preview.                  |
-| `size`              | string  | Variant size (`S`, `M`, `L`, etc.).               |
-| `image`             | string  | URL to the packshot for that SKU.                 |
-| `price.unitPrice`   | number  | Partner-specific unit price (garment + print).    |
-| `price.currency`    | string  | ISO currency code, e.g. `CHF`, `EUR`.            |
-
-> **Note:** The exact product fields may be adjusted based on Dinschrift’s catalogue structure and commercial agreements. Prices and available SKUs are partner-specific.
+> **Note:** This endpoint intentionally does **not** return SKUs to keep the response small and fast.  
+> SKUs are returned via `GET /v1/products/{productId}` and `GET /v1/skus`.
 
 ---
 
-### 4.2. `GET /v1/skus/{sku}`
+### 4.2. `GET /v1/products/{productId}`
 
-Returns details about a specific SKU.
+Returns a **single product**, including all SKUs for that style that are available to the authenticated partner.
 
 - **Auth:** required  
-- **Path parameter:** `sku` – the SKU code.  
-- **Response:** SKU details.
+- **Path parameter:** `productId` – e.g. `STTU758`.
+
+#### Example response
+
+```json
+{
+  "productId": "STTU758",
+  "name": "Creator",
+  "brand": "Stanley/Stella",
+  "category": "tshirt",
+  "description": "Unisex medium fit single jersey T-shirt",
+  "allowedSides": ["front", "back"],
+  "printProfiles": ["LGT", "DRK", "NOTRANS"],
+  "skus": [
+    {
+      "sku": "STTU758_C001_S",
+      "colorCode": "C001",
+      "colorName": "Off White",
+      "colorGroup": "white",
+      "hex": "#f7f3ef",
+      "size": "S",
+      "image": "https://img.dinschrift.ch/packshots/STTU758_C001_S.jpg",
+      "price": {
+        "unitPrice": 12.50,
+        "currency": "CHF"
+      }
+    },
+    {
+      "sku": "STTU758_C318_M",
+      "colorCode": "C318",
+      "colorName": "Red",
+      "colorGroup": "red",
+      "hex": "#d2232a",
+      "size": "M",
+      "image": "https://img.dinschrift.ch/packshots/STTU758_C318_M.jpg",
+      "price": {
+        "unitPrice": 13.20,
+        "currency": "CHF"
+      }
+    }
+  ]
+}
+```
+
+#### SKU-level fields (for this endpoint)
+
+| Field             | Type    | Description                                           |
+|-------------------|---------|-------------------------------------------------------|
+| `sku`             | string  | Unique SKU code: `PRODUCT_COLOUR_SIZE`.              |
+| `colorCode`       | string  | Internal colour code (e.g. `C318`).                  |
+| `colorName`       | string  | Human-friendly colour name (e.g. `Red`).             |
+| `colorGroup`      | string  | Normalised colour family (`red`, `blue`, `black`).   |
+| `hex`             | string  | HEX colour value for UI preview.                     |
+| `size`            | string  | Variant size (`S`, `M`, `L`, etc.).                  |
+| `image`           | string  | URL to the packshot for that SKU.                    |
+| `price.unitPrice` | number  | Partner-specific unit price (garment + print).       |
+| `price.currency`  | string  | ISO currency code, e.g. `CHF`, `EUR`.                |
+
+> **Note:** Prices and available SKUs are **partner-specific** and depend on the authenticated account.
+
+---
+
+### 4.3. `GET /v1/skus`
+
+Search and browse **orderable SKUs** for the authenticated partner.  
+This is the main machine endpoint for questions like:
+
+- “All red T-shirts”  
+- “All pullovers”  
+- “All hoodies in size M”  
+
+- **Auth:** required  
+- **Query parameters (all optional, used for filtering):**
+  - `productId` – limit to a specific product (e.g. `STTU758`).
+  - `category` – `tshirt`, `pullover`, `hoodie`, etc.
+  - `color` – normalised colour group, e.g. `red`, `black`, `white`.
+  - `colorCode` – exact internal colour code, e.g. `C318`.
+  - `size` – `XS`, `S`, `M`, `L`, `XL`, etc.
+  - `brand` – brand filter, e.g. `Stanley/Stella`.
+  - `limit` – max number of SKUs per page (e.g. `100` or `200`).
+  - `cursor` – pagination cursor returned by a previous response.
+
+If no filters are provided, the API may apply a default limit and return the **first page** of all SKUs available to that partner.
+
+#### Example: all red T-shirts
+
+```http
+GET /v1/skus?category=tshirt&color=red&limit=200 HTTP/1.1
+Authorization: Bearer <token>
+```
+
+#### Example: all pullovers
+
+```http
+GET /v1/skus?category=pullover&limit=200 HTTP/1.1
+Authorization: Bearer <token>
+```
+
+#### Example response
+
+```json
+{
+  "skus": [
+    {
+      "sku": "STTU758_C318_M",
+      "productId": "STTU758",
+      "productName": "Creator",
+      "category": "tshirt",
+      "brand": "Stanley/Stella",
+      "colorCode": "C318",
+      "colorName": "Red",
+      "colorGroup": "red",
+      "hex": "#d2232a",
+      "size": "M",
+      "image": "https://img.dinschrift.ch/packshots/STTU758_C318_M.jpg",
+      "price": {
+        "unitPrice": 13.20,
+        "currency": "CHF"
+      }
+    },
+    {
+      "sku": "STTU758_C318_L",
+      "productId": "STTU758",
+      "productName": "Creator",
+      "category": "tshirt",
+      "brand": "Stanley/Stella",
+      "colorCode": "C318",
+      "colorName": "Red",
+      "colorGroup": "red",
+      "hex": "#d2232a",
+      "size": "L",
+      "image": "https://img.dinschrift.ch/packshots/STTU758_C318_L.jpg",
+      "price": {
+        "unitPrice": 13.80,
+        "currency": "CHF"
+      }
+    }
+  ],
+  "nextCursor": "eyJpZCI6ICJTVFRVNzU4X0MzMThfTCJ9"
+}
+```
+
+#### Field meanings
+
+All SKU fields have the same meaning as in `GET /v1/products/{productId}`, with additional context fields:
+
+| Field         | Type   | Description                                           |
+|---------------|--------|-------------------------------------------------------|
+| `productId`   | string | Product code (e.g. `STTU758`).                        |
+| `productName` | string | Product name (e.g. `Creator`).                        |
+| `category`    | string | Normalised category (`tshirt`, `pullover`, etc.).     |
+| `brand`       | string | Brand name.                                           |
+| `nextCursor`  | string | Cursor for fetching the next page of results.        |
+
+Clients can repeatedly call `GET /v1/skus` with the `cursor` value until no `nextCursor` is returned (end of results).
+
+---
+
+### 4.4. `GET /v1/skus/{sku}`
+
+Returns details about a **single SKU**.
+
+- **Auth:** required  
+- **Path parameter:** `sku` – the SKU code (e.g. `STTU758_C001_M`).  
+- **Response:** SKU details, similar to a single entry in `GET /v1/skus`.
 
 Example response (conceptual):
 
@@ -196,9 +333,19 @@ Example response (conceptual):
 {
   "sku": "STTU758_C001_M",
   "productId": "STTU758",
+  "productName": "Creator",
+  "brand": "Stanley/Stella",
+  "category": "tshirt",
+  "colorCode": "C001",
+  "colorName": "Off White",
+  "colorGroup": "white",
+  "hex": "#f7f3ef",
   "size": "M",
-  "colourCode": "C001",
-  "colourName": "Off White",
+  "image": "https://img.dinschrift.ch/packshots/STTU758_C001_M.jpg",
+  "price": {
+    "unitPrice": 13.20,
+    "currency": "CHF"
+  },
   "allowedSides": ["front", "back"],
   "defaultProfile": "LGT"
 }
