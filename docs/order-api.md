@@ -385,7 +385,7 @@ In the current pilot implementation, this endpoint is used primarily for interna
 Example request:
 
 ```http
-GET /v1/orders?id=<ClientId> HTTP/1.1
+GET /v1/orders/{clientId} HTTP/1.1
 Authorization: Bearer <token>
 ```
 
