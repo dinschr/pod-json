@@ -380,7 +380,7 @@ In the current pilot implementation, this endpoint is used primarily for interna
 
 - **Auth:** required  
 - **Query parameters:**
-  - `id` (required) – partner-specific identifier (provided by Dinschrift).
+  - `ClientId` (required) – partner-specific identifier (provided by Dinschrift).
 
 Example request:
 
@@ -400,8 +400,7 @@ Example successful response (real-world sample, truncated):
     "TotalQuantity": 1,
     "TotalAmount": "59.05",
     "Delivery": 1,
-    "Status": 99,
-    "URL": "/app/order?nr=1015756146"
+    "Status": 99
   },
   {
     "OrderId": "1015756147",
@@ -410,8 +409,7 @@ Example successful response (real-world sample, truncated):
     "TotalQuantity": 1,
     "TotalAmount": "59.10",
     "Delivery": 0,
-    "Status": 99,
-    "URL": "/app/order?nr=1015756147"
+    "Status": 99
   }
 ]
 ```
