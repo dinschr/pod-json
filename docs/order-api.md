@@ -20,10 +20,10 @@ The goal is to define a clear, predictable way for an integrator’s system to:
 This section reflects the current state of the private pilot implementation.
 
 - `GET /v1/health` – ✅ Live  
-- `GET /v1/orders/{ClientId}` –⚙️ Designed, implementation in progress 
+- `GET /v1/orders/{clientId}` – ⚙️ Designed, implementation in progress  
 - `POST /v1/orders` – ⚙️ Designed, implementation in progress  
-- `GET /v1/orders/{apiOrderId}`
-- Webhooks 
+- `GET /v1/orders/{apiOrderId}` – 💤 Planned  
+- Webhooks – 💤 Planned  
 
 The wire protocol and JSON formats are considered **stable enough for pilot use**, but details may still change.
 
@@ -64,7 +64,7 @@ All paths below are relative to this base.
 Example:
 
 - `GET /v1/health`
-- `GET /v1/orders`
+- `GET /v1/orders/{clientId}`
 - `POST /v1/orders`
 
 The actual base URL for test and production environments will be communicated directly to integrators.
@@ -101,35 +101,84 @@ These endpoints allow integrators to discover which products and SKUs they can o
 
 ### 4.1. `GET /v1/products`
 
-Returns a list of products available to the authenticated partner.
+Returns the list of products and SKUs available to the authenticated partner.  
+Each SKU includes pricing, colour data, sizing, and a preview image.
 
 - **Auth:** required  
-- **Query params:** none (initial version)  
-- **Response:** list of simplified product objects
+- **Query params:** none (v1 keeps it simple)  
+- **Response:** a list of product objects, each containing the SKUs available for the requesting partner.
 
-Example response (conceptual):
+#### Example response
 
 ```json
 {
   "products": [
     {
       "productId": "STTU758",
-      "name": "Stanley/Stella Creator",
+      "name": "Creator",
       "brand": "Stanley/Stella",
       "category": "T-Shirt",
-      "description": "Unisex medium fit single jersey t-shirt",
+      "description": "Unisex medium fit single jersey T-shirt",
       "allowedSides": ["front", "back"],
-      "availableSkus": [
-        "STTU758_C001_S",
-        "STTU758_C001_M",
-        "STTU758_C001_L"
+      "printProfiles": ["LGT", "DRK", "NOTRANS"],
+      "skus": [
+        {
+          "sku": "STTU758_C001_S",
+          "colorCode": "C001",
+          "colorName": "Off White",
+          "hex": "#f7f3ef",
+          "size": "S",
+          "image": "https://img.dinschrift.ch/packshots/STTU758_C001_S.jpg",
+          "price": {
+            "unitPrice": 12.50,
+            "currency": "CHF"
+          }
+        },
+        {
+          "sku": "STTU758_C001_M",
+          "colorCode": "C001",
+          "colorName": "Off White",
+          "hex": "#f7f3ef",
+          "size": "M",
+          "image": "https://img.dinschrift.ch/packshots/STTU758_C001_M.jpg",
+          "price": {
+            "unitPrice": 13.20,
+            "currency": "CHF"
+          }
+        }
       ]
     }
   ]
 }
 ```
 
-The exact product fields may be adjusted based on Dinschrift’s catalogue structure.
+#### Product-level fields
+
+| Field          | Type   | Description                                          |
+|----------------|--------|------------------------------------------------------|
+| `productId`    | string | Internal product code (e.g. `STTU758`).             |
+| `name`         | string | Marketing/product name.                             |
+| `brand`        | string | Brand (e.g. `Stanley/Stella`).                      |
+| `category`     | string | Product category (e.g. `T-Shirt`).                  |
+| `description`  | string | Optional human-readable description.                |
+| `allowedSides` | array  | Which sides the product can be printed on.         |
+| `printProfiles`| array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.|
+| `skus`         | array  | List of SKU entries available to this partner.     |
+
+#### SKU-level fields
+
+| Field               | Type    | Description                                       |
+|---------------------|---------|---------------------------------------------------|
+| `sku`               | string  | Unique SKU code: `PRODUCT_COLOUR_SIZE`.          |
+| `colorCode`         | string  | Internal colour code.                             |
+| `colorName`         | string  | Human-friendly colour name.                       |
+| `hex`               | string  | HEX colour value for UI preview.                  |
+| `size`              | string  | Variant size (`S`, `M`, `L`, etc.).               |
+| `image`             | string  | URL to the packshot for that SKU.                 |
+| `price.unitPrice`   | number  | Partner-specific unit price (garment + print).    |
+| `price.currency`    | string  | ISO currency code, e.g. `CHF`, `EUR`.            |
+
+> **Note:** The exact product fields may be adjusted based on Dinschrift’s catalogue structure and commercial agreements. Prices and available SKUs are partner-specific.
 
 ---
 
@@ -373,19 +422,19 @@ More detailed sub-statuses may be added later if needed.
 
 ---
 
-### 6.4. `GET /v1/orders` (list orders)
+### 6.4. `GET /v1/orders/{clientId}` (list orders)
 
 Returns a list of orders associated with a specific partner identifier.  
 In the current pilot implementation, this endpoint is used primarily for internal and partner-facing dashboards.
 
 - **Auth:** required  
-- **Query parameters:**
-  - `ClientId` (required) – partner-specific identifier (provided by Dinschrift).
+- **Path parameter:**
+  - `clientId` (required) – partner-specific identifier (provided by Dinschrift).
 
 Example request:
 
 ```http
-GET /v1/orders/{clientId} HTTP/1.1
+GET /v1/orders/707a106d7bd71aa0a17e HTTP/1.1
 Authorization: Bearer <token>
 ```
 
@@ -394,22 +443,24 @@ Example successful response (real-world sample, truncated):
 ```json
 [
   {
-    "OrderId": "1015756146",
+    "OrderId": "101575614766532680",
     "Date": "22.10.2025",
     "OrderNr": 50116,
     "TotalQuantity": 1,
     "TotalAmount": "59.05",
     "Delivery": 1,
-    "Status": 99
+    "Status": 99,
+    "URL": "/app/order?nr=101575614766532680"
   },
   {
-    "OrderId": "1015756147",
+    "OrderId": "101575614766532511",
     "Date": "22.10.2025",
     "OrderNr": 50114,
     "TotalQuantity": 1,
     "TotalAmount": "59.10",
     "Delivery": 0,
-    "Status": 99
+    "Status": 99,
+    "URL": "/app/order?nr=101575614766532511"
   }
 ]
 ```
@@ -505,7 +556,7 @@ The only requirement for the API is:
 
 ## 9. Webhooks (optional, future)
 
-In addition to polling `GET /v1/orders/{id}` or `GET /v1/orders`, the API may support **webhooks** in the future:
+In addition to polling `GET /v1/orders/{apiOrderId}` or `GET /v1/orders/{clientId}`, the API may support **webhooks** in the future:
 
 - Integrator provides a `callbackUrl` at account level or per order.
 - Dinschrift sends HTTP `POST` requests to that URL on significant events:
