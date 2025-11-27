@@ -1,116 +1,118 @@
 # POD-JSON – Overview
 
-POD-JSON defines how one machine can ask another machine to print and ship custom T-shirts.
+POD-JSON defines how one machine can ask another machine to **print and ship customised textile products**.  
+It is a minimal, practical specification created for real B2B print-on-demand workflows.
 
-The goal is **simplicity**:
+The goals are:
 
-- Simple for integrators to understand and implement.
-- Simple for Dinschrift to map into its real production workflow.
-- Focused on **orders**, not on every possible POD scenario.
+- **Simplicity** – easy to implement and validate.  
+- **Predictability** – clear, well-defined JSON structure.  
+- **Workflow alignment** – mirrors Dinschrift’s actual production process.
 
-This repository currently defines:
+This repository contains:
 
-1. **POD-JSON Lite** – a minimal JSON order format.
-2. A **machine-to-machine Order API concept** that uses POD-JSON Lite.
+1. **POD-JSON Lite** – the order data model.  
+2. The **Order API concept** – a REST-style HTTP interface that uses POD-JSON Lite.
 
 ---
 
 ## 1. Design goals
 
-- **Workflow first**  
-  The format is designed around Dinschrift’s actual workflow:  
-  SKU-based products, fixed print areas, RIP-friendly profiles and naming.
+### **Workflow first**
+Designed around Dinschrift’s real POD workflow:
 
-- **Minimal JSON**  
-  Only the information that is needed to:
-  - know what to print,
-  - where to ship it, and
-  - how many items to produce.
+- SKU‑based products  
+- Known print areas  
+- RIP-friendly profiles (`LGT`, `DRK`, `WHTP`, `NOTRANS`)  
+- Automation‑ready file handling  
 
-- **Easy for integrators**  
-  An integrator should be able to:
-  - pick a SKU,
-  - supply a design file URL or design ID,
-  - choose a print profile (e.g. `LGT` or `DRK`),
-  - send one order JSON.
+### **Minimal but complete**
+Only the fields required to:
 
-- **Stable but evolvable**  
-  The format carries a `schemaVersion` so future versions can extend it without breaking current users.
+- determine **what** to print  
+- determine **how** to print  
+- determine **where** to ship  
+- determine **how many** items  
+
+Everything else is handled internally (DPI, design placement, RIP config).
+
+### **Easy for integrators**
+A partner should be able to:
+
+1. Pick a SKU  
+2. Provide a design URL or ID  
+3. Select a print profile  
+4. Submit **one JSON**  
+
+### **Stable and evolvable**
+Every order includes a `schemaVersion` so future versions remain backward compatible.
+
+👉 Format: [`pod-json-lite.md`](./pod-json-lite.md)
 
 ---
 
 ## 2. POD-JSON Lite
 
-POD-JSON Lite is the core order object that integrators send to the Dinschrift Order API.
+POD-JSON Lite is the **single JSON object** used to submit a print-on-demand textile order.
 
-Key ideas:
+Each order contains:
 
-- One **Order** contains:
-  - Order metadata (IDs, currency, shipping method)
-  - Shipping address
-  - One or more **OrderLines**
+- Order metadata  
+- A shipping address  
+- One or more **OrderLines**  
+- Each line includes:
+  - a SKU  
+  - quantity  
+  - a **PrintSpec**  
+    - print side  
+    - print profile  
+    - design source (URL or ID)  
 
-- Each **OrderLine** contains:
-  - A SKU
-  - A quantity
-  - A **PrintSpec**
-
-- The **PrintSpec** tells Dinschrift:
-
-  - Which side to print
-  - Which print profile to use (e.g. `LGT`, `DRK`, `WHTP`, `NOTRANS`)
-  - Where to get the design:
-    - either a `designUrl`
-    - or a `designId` already known to Dinschrift
-
-Print areas, DPI, coordinates, RIP configuration etc. are handled internally by Dinschrift based on SKU, side and profile.
-
-👉 Full details:  
-[**POD-JSON Lite format**](./pod-json-lite.md)
+This is the core payload consumed by the Order API.
 
 ---
 
 ## 3. Order API (concept)
 
-The Order API is a simple HTTP JSON API that uses POD-JSON Lite as its order payload.
+A simple, modern **REST-style API** for machines that need to place or track textile print orders.
 
-Planned core endpoints:
+Core endpoints include:
 
-- `GET /v1/health` – basic health check
-- `GET /v1/products` – list available products
-- `GET /v1/skus/{sku}` – detailed info for a single SKU
-- `GET /v1/stock` – check stock for a specific SKU
-- `POST /v1/stock/query` – batch stock query
-- `POST /v1/orders` – submit an order (POD-JSON Lite)
-- `GET /v1/orders/{id}` – read order status and details
+- `GET /v1/health` – API availability  
+- `GET /v1/products` – product models  
+- `GET /v1/skus` – browse/filter SKUs  
+- `GET /v1/skus/{sku}` – SKU detail  
+- `GET /v1/stock` – stock for a SKU  
+- `POST /v1/stock/query` – batch stock query  
+- `POST /v1/orders` – submit an order  
+- `GET /v1/orders/{id}` – order details/status  
 
-Authentication is done with **Bearer tokens** issued by Dinschrift for each integration partner.
+Authentication uses **Bearer tokens**.  
+Billing and payment are handled separately (invoice or prepaid credit model).
 
-Payments and billing are treated as a **separate concern** (e.g. invoice or prepaid credit). The API itself only needs to know whether an account is allowed to place orders.
-
-👉 Full details:  
-[**Order API concept**](./order-api.md)
+👉 Full API concept: [`order-api.md`](./order-api.md)
 
 ---
 
 ## 4. Status & usage
 
-> **Pilot / draft**  
-> This specification is in an experimental phase and may change based on feedback and internal learning.
+> **Pilot / Draft Specification**  
+> Changes may occur as integrators begin testing.
 
-If you are interested in integrating with Dinschrift using this spec:
+To integrate:
 
-- Get in touch with Dinschrift to discuss:
-  - commercial terms,
-  - access to a test environment,
-  - API key issuance.
-
-Implementation of this spec without a direct agreement does **not** automatically give access to Dinschrift’s production systems.
+1. Contact Dinschrift  
+2. Obtain API credentials  
+3. Review POD‑JSON Lite  
+4. Test the API in staging  
+5. Move to production with approval  
 
 ---
 
 ## 5. Repository contents
 
-- [`docs/pod-json-lite.md`](./pod-json-lite.md) – POD-JSON Lite order format
-- [`docs/order-api.md`](./order-api.md) – Order API concept
-- `README.md` – high-level description and links
+- [`pod-json-lite.md`](./pod-json-lite.md) – POD-JSON Lite format  
+- [`order-api.md`](./order-api.md) – Order API concept  
+- `README.md` – project overview  
+- `index.md` – this page
+
