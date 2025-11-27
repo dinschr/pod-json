@@ -3,7 +3,7 @@
 This document describes a **conceptual REST-style HTTP API** that uses POD-JSON Lite as its order payload.  
 A REST API means the system communicates using standard HTTP methods (GET, POST, etc.) and JSON request/response bodies, making integration simple and predictable for machines.
 
-The purpose of this API is to define a clear workflow for integrators to:
+The goal is to define a clear, predictable way for an integrator’s system to:
 
 - discover products and SKUs,
 - check stock,
@@ -12,6 +12,20 @@ The purpose of this API is to define a clear workflow for integrators to:
 
 > **Note:** This document is conceptual and may not match any live implementation 1:1.  
 > Exact URLs and behaviour will be agreed with integrators during onboarding.
+
+---
+
+## 0. Implementation status
+
+This section reflects the current state of the private pilot implementation.
+
+- `GET /v1/health` – ✅ Live  
+- `GET /v1/orders?id=<ClientId>` –⚙️ Designed, implementation in progress 
+- `POST /v1/orders` – ⚙️ Designed, implementation in progress  
+- `GET /v1/orders/{apiOrderId}` – 💤 Planned  
+- Webhooks – 💤 Planned  
+
+The wire protocol and JSON formats are considered **stable enough for pilot use**, but details may still change.
 
 ---
 
@@ -50,6 +64,7 @@ All paths below are relative to this base.
 Example:
 
 - `GET /v1/health`
+- `GET /v1/orders`
 - `POST /v1/orders`
 
 The actual base URL for test and production environments will be communicated directly to integrators.
@@ -81,6 +96,8 @@ Example response:
 ## 4. Product & SKU endpoints
 
 These endpoints allow integrators to discover which products and SKUs they can order.
+
+> **Status:** conceptual – details will be finalised once the pilot focuses on external product catalogues.
 
 ### 4.1. `GET /v1/products`
 
@@ -143,6 +160,8 @@ Example response (conceptual):
 ## 5. Stock endpoints
 
 These endpoints allow integrators to check stock before creating orders.
+
+> **Status:** conceptual – not yet implemented in the pilot.
 
 ### 5.1. `GET /v1/stock`
 
@@ -228,7 +247,10 @@ The main purpose of the API is to accept orders in POD-JSON Lite format and prov
 
 ### 6.1. `POST /v1/orders`
 
-Submit a new order.
+Submit a new order to Dinschrift using POD-JSON Lite.
+
+> **Status:** designed – implementation in progress.  
+> Pilot integrators should coordinate with Dinschrift before using this endpoint.
 
 - **Auth:** required  
 - **Headers:**
@@ -244,9 +266,9 @@ Submit a new order.
 ```json
 {
   "orderId": "PARTNER-12345",
-  "apiOrderId": "DINSCHRIFT-98765",
+  "apiOrderId": "DINSCHR-1732715111225",
   "status": "ACCEPTED",
-  "receivedAt": "2025-01-01T12:00:00Z"
+  "receivedAt": "2025-11-26T11:14:06.633Z"
 }
 ```
 
@@ -280,7 +302,9 @@ The exact behaviour and retention window should be documented in the live implem
 
 ### 6.3. `GET /v1/orders/{apiOrderId}`
 
-Fetch details and status of an order.
+Fetch details and status of a single order.
+
+> **Status:** planned – not yet implemented in the pilot.
 
 - **Auth:** required  
 - **Path parameter:** `apiOrderId` – the order ID returned by `POST /v1/orders`.
@@ -289,7 +313,7 @@ Fetch details and status of an order.
 
 ```json
 {
-  "apiOrderId": "DINSCHRIFT-98765",
+  "apiOrderId": "DINSCHR-98765",
   "orderId": "PARTNER-12345",
   "status": "IN_PRODUCTION",
   "createdAt": "2025-01-01T12:00:00Z",
@@ -346,6 +370,64 @@ Initial set of machine-readable status values:
 - `ERROR` – permanent error that prevents completion (with reason)
 
 More detailed sub-statuses may be added later if needed.
+
+---
+
+### 6.4. `GET /v1/orders` (list orders)
+
+Returns a list of orders associated with a specific partner identifier.  
+In the current pilot implementation, this endpoint is used primarily for internal and partner-facing dashboards.
+
+- **Auth:** required  
+- **Query parameters:**
+  - `id` (required) – partner-specific identifier (provided by Dinschrift).
+
+Example request:
+
+```http
+GET /v1/orders?id=<ClientId> HTTP/1.1
+Authorization: Bearer <token>
+```
+
+Example successful response (real-world sample, truncated):
+
+```json
+[
+  {
+    "OrderId": "1015756146",
+    "Date": "22.10.2025",
+    "OrderNr": 50116,
+    "TotalQuantity": 1,
+    "TotalAmount": "59.05",
+    "Delivery": 1,
+    "Status": 99,
+    "URL": "/app/order?nr=1015756146"
+  },
+  {
+    "OrderId": "1015756147",
+    "Date": "22.10.2025",
+    "OrderNr": 50114,
+    "TotalQuantity": 1,
+    "TotalAmount": "59.10",
+    "Delivery": 0,
+    "Status": 99,
+    "URL": "/app/order?nr=1015756147"
+  }
+]
+```
+
+#### Field meanings
+
+- **OrderId** – Internal Dinschrift order reference (long string ID).  
+- **Date** – Order date in `DD.MM.YYYY` format.  
+- **OrderNr** – Internal numeric order number.  
+- **TotalQuantity** – Sum of all items in the order.  
+- **TotalAmount** – Total order value in CHF.  
+- **Delivery** – Delivery mode flag (0/1/2 – internal codes).  
+- **Status** – Internal status code (`99` = completed/archived in the current system).  
+- **URL** – Internal backoffice link (mainly for Dinschrift’s own UI; may be useful for deep links in some integrations).
+
+> **Note:** The exact shape of this response is influenced by the existing Dinschrift backend. It may be normalised further in future versions (e.g. ISO 8601 dates, structured status and delivery enums).
 
 ---
 
@@ -425,7 +507,7 @@ The only requirement for the API is:
 
 ## 9. Webhooks (optional, future)
 
-In addition to polling `GET /v1/orders/{id}`, the API may support **webhooks** in the future:
+In addition to polling `GET /v1/orders/{id}` or `GET /v1/orders`, the API may support **webhooks** in the future:
 
 - Integrator provides a `callbackUrl` at account level or per order.
 - Dinschrift sends HTTP `POST` requests to that URL on significant events:
