@@ -154,6 +154,7 @@ Authorization: Bearer <token>
       "brand": "Stanley/Stella",
       "category": "tshirt",
       "description": "Unisex medium fit single jersey T-shirt",
+      "fit": "Medium Fit",
       "allowedSides": ["front", "back"],
       "printProfiles": ["LGT", "DRK", "NOTRANS"]
     },
@@ -163,6 +164,7 @@ Authorization: Bearer <token>
       "brand": "Stanley/Stella",
       "category": "pullover",
       "description": "Unisex crew neck sweatshirt",
+      "fit": "Oversized",
       "allowedSides": ["front", "back"]
     }
   ]
@@ -178,6 +180,7 @@ Authorization: Bearer <token>
 | `brand`         | string | Brand (e.g. `Stanley/Stella`).                        |
 | `category`      | string | Normalised category (`tshirt`, `pullover`, etc.).     |
 | `description`   | string | Optional human-readable description.                  |
+| `fit`           | string | Normalised fit ('medium fit', 'fitted', etc.          |
 | `allowedSides`  | array  | Which sides the product can be printed on.            |
 | `printProfiles` | array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.   |
 
