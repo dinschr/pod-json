@@ -155,8 +155,9 @@ Authorization: Bearer <token>
       "category": "tshirt",
       "description": "Unisex medium fit single jersey T-shirt",
       "fit": "Medium Fit",
-      "allowedSides": ["front", "back"],
+      "allowedSides": ["front", "back", "lef", "right"],
       "printProfiles": ["LGT", "DRK", "NOTRANS"]
+      "mainImage": "https://img.dinschrift.ch/studio/STTU758_C001_S.jpg",
     },
     {
       "productId": "STSU822",
@@ -165,7 +166,9 @@ Authorization: Bearer <token>
       "category": "pullover",
       "description": "Unisex crew neck sweatshirt",
       "fit": "Oversized",
-      "allowedSides": ["front", "back"]
+      "allowedSides": ["front", "back"],
+      "printProfiles": ["LGT", "DRK", "NOTRANS"]
+      "mainImage": "https://img.dinschrift.ch/studio/STSU822_C001_S.jpg",
     }
   ]
 }
@@ -183,6 +186,8 @@ Authorization: Bearer <token>
 | `fit`           | string | Normalised fit ('medium fit', 'fitted', etc.          |
 | `allowedSides`  | array  | Which sides the product can be printed on.            |
 | `printProfiles` | array  | Supported profiles, e.g. `["LGT","DRK","NOTRANS"]`.   |
+| `mainImage`     | string | URL to the default studioshot for that product.       |
+
 
 > **Note:** This endpoint intentionally does **not** return SKUs to keep the response small and fast.  
 > SKUs are returned via `GET /v1/products/{productId}` and `GET /v1/skus`.
